@@ -1,5 +1,5 @@
 '''
-This file contains the main logic for anything related to the movement of a car
+This file contains the logic for anything related to the movement of a car
 '''
 
 # pylint: disable= E0611
