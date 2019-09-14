@@ -19,9 +19,12 @@ class Car:
         self.y_pos = y_pos
         self.d_x = d_x
         self.d_y = d_y
+        self.velocity = 50 # in kmh
+
         # Arbitrary height and width of cars
-        self.width = 110
-        self.height = 191
+        # Initial values are w=110, h=191
+        self.width = 42
+        self.height = 60
 
     def load_image(self, img):
         '''
@@ -32,7 +35,7 @@ class Car:
             None
         '''
         self.image = pygame.image.load(img).convert()
-        self.image = pygame.transform.scale(self.image, (110, 191))
+        self.image = pygame.transform.scale(self.image, (42, 60))
         self.image.set_colorkey(BLACK)
 
     def draw_image(self, screen):
@@ -56,6 +59,18 @@ class Car:
         Function to move the car along the y-axis
         '''
         self.y_pos += self.d_y
+
+    def change_velocity(self, new_v, mode):
+        '''
+        Method to change the velocity of the car
+        Input:
+            new_v (int) - The new velocity of the car in km/h
+        Output:
+            None
+        '''
+        self.velocity = new_v
+
+
 
     def check_out_of_screen(self):
         '''

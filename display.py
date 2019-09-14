@@ -31,7 +31,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption("EcoCAR DEV Challenge")
         self.width = 600
-        self.height = 700
+        self.height = 900
         self.size = (self.width, self.height)
         self.screen = pygame.display.set_mode(self.size)
         self.clock = pygame.time.Clock()
@@ -45,7 +45,7 @@ class Game:
         pygame.display.set_caption("EcoCAR DEV Challenge")
 
         # Creating the main car
-        player = Car(175, 475, 0, 0)
+        player = Car(0, 300, 0, 0)
         player.load_image("images/chevy.png")
 
         # Load the fonts
@@ -56,16 +56,15 @@ class Game:
 
         # Setup the stripes.
         stripes = []
-        stripe_count = 20
-        stripe_x = 185
+        stripe_count = 50
         stripe_y = -10
-        stripe_width = 20
-        stripe_height = 80
-        space = 20
+        stripe_width = 5
+        stripe_height = 45
+        space = 15
 
         for i in range(stripe_count):
-            stripes.append([185, stripe_y])
-            stripes.append([400, stripe_y])
+            stripes.append([255, stripe_y])
+            stripes.append([345, stripe_y])
             stripe_y += stripe_height + space
 
         collision = True
@@ -79,7 +78,7 @@ class Game:
                 # Reset everything when the user starts the game.
                 if collision and event.type == pygame.MOUSEBUTTONDOWN:
                     collision = False
-                    player.x_pos = 250
+                    player.x_pos = 280
                     player.d_x = 0
                     player.d_y = 0
                     pygame.mouse.set_visible(True)
@@ -110,18 +109,20 @@ class Game:
             #  Screen-clearing code
             self.screen.fill(GREY)
 
-            # Drawing and moving the stripes
+            # Drawing the stripes and lines
             if not collision:
-                # Draw the stripes
                 for i in range(stripe_count):
                     pygame.draw.rect(self.screen, WHITE, [stripes[i][0], stripes[i][1],
                                                           stripe_width, stripe_height])
+                pygame.draw.lines(self.screen, RED, False, [(165,0), (165,900)], 5)
+                pygame.draw.lines(self.screen, RED, False, [(435,0), (435,900)], 5)
 
                 # Move the stripes
                 for i in range(stripe_count):
-                    stripes[i][1] += 3
+                    # This accounts for speed at which the line moves
+                    stripes[i][1] += player.velocity / 10
                     if stripes[i][1] > self.size[1]:
-                        stripes[i][1] = -40 - stripe_height
+                        stripes[i][1] = -30 - stripe_height
 
                 player.draw_image(self.screen)
                 player.move_x()
