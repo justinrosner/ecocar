@@ -8,13 +8,15 @@ display methods to the screen
 import os
 import pygame
 import cruise_control
+import input_box as ib
 from car import Car
 
 # Define some basic coloursW
 WHITE = (255, 255, 255)
 GREY = (159, 163, 168)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
+GREEN = pygame.Color("#6b9c58")
+YELLOW = pygame.Color("#fcdb38")
+BLACK = (0, 0, 0)
 TEXT_COLOR = (250, 105, 10)
 
 class Game:
@@ -32,8 +34,7 @@ class Game:
         pygame.display.set_caption("EcoCAR DEV Challenge")
         self.width = 600
         self.height = 900
-        self.size = (self.width, self.height)
-        self.screen = pygame.display.set_mode(self.size)
+        self.screen = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.time.Clock()
         self.background = pygame.Surface(self.screen.get_size()).convert()
         self.exit = False
@@ -48,11 +49,15 @@ class Game:
         player = Car(0, 300, 0, 0)
         player.load_image("images/chevy.png")
 
+        velocity_input = ib.InputBox(480, 30, 50, 30, '')
+
         # Load the fonts
         font_40 = pygame.font.SysFont("Arial", 40, True, False)
         font_30 = pygame.font.SysFont("Arial", 30, True, False)
+        font_20 = pygame.font.SysFont("Arial", 20, True, False)
         text_title = font_40.render("EcoCAR DEV Challenge", True, TEXT_COLOR)
         text_ins = font_30.render("Click to Run!", True, TEXT_COLOR)
+        text_velocity = font_20.render("Enter a velocity:", True, BLACK)
 
         # Setup the stripes.
         stripes = []
@@ -104,25 +109,43 @@ class Game:
                         elif event.key == pygame.K_DOWN:
                             player.d_y = 0
 
+                # handle the event for the velocity input box
+                new_velocity = velocity_input.handle_event(event)
+
+                # Only change the car velocity when its a valid int between 0-100
+                if is_int(new_velocity) and int(new_velocity) in range(0, 101):
+                    print(new_velocity)
+                    player.velocity = int(new_velocity)
+
             # --- Game logic should go here ie. function calls to cruise_control ---
 
             #  Screen-clearing code
             self.screen.fill(GREY)
 
-            # Drawing the stripes and lines
             if not collision:
+                # Drawing the stripes
                 for i in range(stripe_count):
                     pygame.draw.rect(self.screen, WHITE, [stripes[i][0], stripes[i][1],
                                                           stripe_width, stripe_height])
-                pygame.draw.lines(self.screen, RED, False, [(165,0), (165,900)], 5)
-                pygame.draw.lines(self.screen, RED, False, [(435,0), (435,900)], 5)
-
                 # Move the stripes
                 for i in range(stripe_count):
                     # This accounts for speed at which the line moves
                     stripes[i][1] += player.velocity / 10
-                    if stripes[i][1] > self.size[1]:
+                    if stripes[i][1] > self.height:
                         stripes[i][1] = -30 - stripe_height
+
+                # Drawing the outer lines to the screen
+                pygame.draw.lines(self.screen, YELLOW, False, [(165,0), (165,900)], 5)
+                pygame.draw.lines(self.screen, YELLOW, False, [(435,0), (435,900)], 5)
+
+                # Drawing the 'grass' to the screen
+                pygame.draw.rect(self.screen, GREEN, (0, 0, 163, 900), 0)
+                pygame.draw.rect(self.screen, GREEN, (437, 0, 163, 900), 0)
+
+                # Handling the drawing the textbox to the screen
+                velocity_input.update()
+                self.screen.blit(text_velocity, [445, 0])
+                velocity_input.draw(self.screen)
 
                 player.draw_image(self.screen)
                 player.move_x()
@@ -132,7 +155,8 @@ class Game:
                 pygame.display.flip()
 
             else:
-                self.draw_start_menu(self.screen, self.size, text_title, text_ins)
+                self.draw_start_menu(self.screen, (self.width, self.height),
+                                     text_title, text_ins)
 
             self.clock.tick(60)
 
@@ -152,6 +176,19 @@ class Game:
         window.blit(text_title, [display_size[0] / 2 - 190, display_size[1] / 2 - 100])
         window.blit(text_ins, [display_size[0] / 2 - 85, display_size[1] / 2 + 40])
         pygame.display.flip()
+
+
+def is_int(string):
+    '''
+    Method to check if a given string is an integer
+    '''
+    try:
+        int(string)
+        return True
+    except ValueError:
+        return False
+    except TypeError:
+        return False
 
 
 if __name__ == '__main__':
