@@ -58,6 +58,7 @@ class Game:
         text_title = font_40.render("EcoCAR DEV Challenge", True, TEXT_COLOR)
         text_ins = font_30.render("Click to Run!", True, TEXT_COLOR)
         text_velocity = font_20.render("Enter a velocity:", True, BLACK)
+        text_cur_velocity = font_20.render(f"Current Velocity: {player.velocity}", True, BLACK)
 
         # Setup the stripes.
         stripes = []
@@ -146,6 +147,10 @@ class Game:
                 velocity_input.update()
                 self.screen.blit(text_velocity, [445, 0])
                 velocity_input.draw(self.screen)
+
+                # Writing the current velocity to the screen
+                text_cur_velocity = font_20.render(f"Current Velocity: {player.velocity}", True, BLACK)
+                self.screen.blit(text_cur_velocity, [0, 0])
 
                 player.draw_image(self.screen)
                 player.move_x()
