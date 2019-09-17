@@ -36,7 +36,7 @@ def acc_scenario1(player_x, player_y, player_speed, car_x,
 
 '''Starts'''
 def laneChange(direction, player_x, player_y):#direction from the press of button, player x
-    #the leftLane and stuff is just the set coordinates for the lanes
+    #the leftLane and stuff is just the set coordinates for the lanes\
     if (((player_x == leftLane) and (direction == left)) or ((player_x == rightLane) and (direction == right))):#trying to turn into barrier
         return errorVariable #replace with whatever we want error to say
     else:
