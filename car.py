@@ -6,7 +6,11 @@ This file contains the logic for anything related to the movement of a car
 
 import pygame
 
+
 BLACK = (0, 0, 0)
+
+def Lerp( From, To, Fraction ):
+    return From + Fraction * ( To - From )
 
 class Car:
     '''
@@ -60,7 +64,7 @@ class Car:
         '''
         self.y_pos += self.d_y
 
-    def change_velocity(self, new_v, mode):
+    def velocity_control(self, num_in ):
         '''
         Method to change the velocity of the car
         Input:
@@ -68,7 +72,9 @@ class Car:
         Output:
             None
         '''
-        self.velocity = new_v
+        self.target_velocity = num_in
+        self.velocity = round( Lerp( self.velocity, self.target_velocity, 1 / 32 ), 3 )
+        self.move_y()
 
 
 

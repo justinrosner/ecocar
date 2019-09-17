@@ -7,6 +7,8 @@ display methods to the screen
 
 import os
 import pygame
+import math
+
 import cruise_control
 import input_box as ib
 from car import Car
@@ -18,6 +20,10 @@ GREEN = pygame.Color("#6b9c58")
 YELLOW = pygame.Color("#fcdb38")
 BLACK = (0, 0, 0)
 TEXT_COLOR = (250, 105, 10)
+
+CurrentLane = 1
+LaneSuperpositions = [ 180, 280, 380 ]
+CurrentNumber = 50
 
 class Game:
     '''
@@ -46,10 +52,15 @@ class Game:
         pygame.display.set_caption("EcoCAR DEV Challenge")
 
         # Creating the main car
-        player = Car(0, 300, 0, 0)
+        player = Car(0, 800, 0, 0)
         player.load_image("images/chevy.png")
 
+        car1 = Car(0, 100, 0, 0)
+        car1.load_image("images/chevy_black.png")
+
+
         velocity_input = ib.InputBox(480, 30, 50, 30, '')
+        car_spawn = ib.InputBox(480, 120, 50, 30, '')
 
         # Load the fonts
         font_40 = pygame.font.SysFont("Arial", 40, True, False)
@@ -73,10 +84,18 @@ class Game:
             stripes.append([345, stripe_y])
             stripe_y += stripe_height + space
 
-        collision = True
 
+
+        collision = True
+        # 
         while not self.exit:
             # pygame event queue
+            global LaneSuperpositions
+            global CurrentLane
+            global CurrentNumber
+
+            player.velocity_control( CurrentNumber )
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.exit = True
@@ -86,7 +105,8 @@ class Game:
                     collision = False
                     player.x_pos = 280
                     player.d_x = 0
-                    player.d_y = 0
+                    player.d_y =0
+
                     pygame.mouse.set_visible(True)
 
                 if not collision:
@@ -111,12 +131,21 @@ class Game:
                             player.d_y = 0
 
                 # handle the event for the velocity input box
-                new_velocity = velocity_input.handle_event(event)
 
+                new_velocity = velocity_input.handle_event(event)
+                new_car = car_spawn.handle_event(event)
+                
+                car1.x_pos = LaneSuperpositions[ CurrentLane ]
                 # Only change the car velocity when its a valid int between 0-100
-                if is_int(new_velocity) and int(new_velocity) in range(0, 101):
-                    print(new_velocity)
-                    player.velocity = int(new_velocity)
+                if is_int(new_velocity) and int(new_velocity) in range(-1000, 1000):
+                    CurrentNumber = int(new_velocity) 
+
+                if is_int(new_car) and int(new_car) in range(-101, 101):           
+                    car1.velocity = int(new_car)
+                    car1.d_y = car1.velocity
+
+                    
+
 
             # --- Game logic should go here ie. function calls to cruise_control ---
 
@@ -135,6 +164,7 @@ class Game:
                     if stripes[i][1] > self.height:
                         stripes[i][1] = -30 - stripe_height
 
+
                 # Drawing the outer lines to the screen
                 pygame.draw.lines(self.screen, YELLOW, False, [(165,0), (165,900)], 5)
                 pygame.draw.lines(self.screen, YELLOW, False, [(435,0), (435,900)], 5)
@@ -148,6 +178,13 @@ class Game:
                 self.screen.blit(text_velocity, [445, 0])
                 velocity_input.draw(self.screen)
 
+
+                Distance = abs( player.y_pos - car1.y_pos ) 
+                pygame.draw.line( self.screen, YELLOW, ( car1.x_pos,car1.y_pos ), ( player.x_pos,player.y_pos ) )
+                #Handling the drawing of car spawn textbook to screen
+                car_spawn.update()
+                car_spawn.draw(self.screen)
+
                 # Writing the current velocity to the screen
                 text_cur_velocity = font_20.render(f"Current Velocity: {player.velocity}", True, BLACK)
                 self.screen.blit(text_cur_velocity, [0, 0])
@@ -156,6 +193,9 @@ class Game:
                 player.move_x()
                 player.move_y()
                 player.check_out_of_screen()
+
+                car1.draw_image(self.screen)
+                car1.move_y()
 
                 pygame.display.flip()
 
