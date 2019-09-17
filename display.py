@@ -23,6 +23,8 @@ TEXT_COLOR = (250, 105, 10)
 
 CurrentLane = 1
 LaneSuperpositions = [ 180, 280, 380 ]
+change = False
+update = False
 
 class Game:
     '''
@@ -88,6 +90,8 @@ class Game:
         CurrentLane = 1
         LaneSuperpositions = [ 180, 280, 380 ]
         while not self.exit:
+            global change
+            global update
             # pygame event queue
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -103,37 +107,11 @@ class Game:
                 new_velocity = velocity_input.handle_event(event)
                 new_car = car_spawn.handle_event(event)
 
-                change = False
-                update = False
-
                 # Only change the car velocity when its a valid int between 0-100
                 if utils.is_int(new_velocity) and int(new_velocity) in range(0, 101):
                     target_velocity = int(new_velocity)
                     change = True
                     start_time = 0.0
-
-                # EVERYTHING BELOW IS FOR THE SPAWNING BOX
-
-                car1.x_pos = LaneSuperpositions[ CurrentLane ]
-                if utils.is_int(new_car) and int(new_car) in range(-101, 101):
-                    car1.velocity = int(new_car)
-                    car1.d_y = car1.velocity
-
-            if change:
-                update = True
-                change = False
-                time_for_accel = utils.calculate_time(player.velocity, target_velocity)
-                start_vel = player.velocity
-                start_time = pygame.time.get_ticks()
-
-            cur_time = pygame.time.get_ticks()
-            if update:
-                print(utils.ms_to_sec(cur_time - start_time), time_for_accel)
-            if update and utils.ms_to_sec(cur_time - start_time) < time_for_accel:
-                player.velocity = round(utils.update_velocity(start_vel, target_velocity,
-                                                        utils.ms_to_sec(cur_time - start_time)), 2)
-
-
 
                 # EVERYTHING BELOW IS FOR THE SPAWNING BOX
 
@@ -148,6 +126,19 @@ class Game:
             self.screen.fill(GREY)
 
             if not collision:
+
+                if change:
+                    update = True
+                    change = False
+                    time_for_accel = utils.calculate_time(player.velocity, target_velocity)
+                    start_vel = player.velocity
+                    start_time = pygame.time.get_ticks()
+
+                cur_time = pygame.time.get_ticks()
+
+                if update and utils.ms_to_sec(cur_time - start_time) < time_for_accel:
+                    player.velocity = round(utils.update_velocity(start_vel, target_velocity,
+                                                            utils.ms_to_sec(cur_time - start_time)), 2)
                 self.draw_stripes(stripe_count, stripes, stripe_width, stripe_height,
                              player.velocity)
 
@@ -165,9 +156,11 @@ class Game:
                 velocity_input.draw(self.screen)
 
                 # Drawing the distance line between cars
-                Distance = abs(player.y_pos - car1.y_pos)
-                pygame.draw.line(self.screen, YELLOW, (car1.x_pos,car1.y_pos), (player.x_pos,player.y_pos))
-
+                T1 = (car1.x_pos + 21, car1.y_pos+ 60)
+                T2 = (player.x_pos + 21, player.y_pos)
+                Distance = abs(player.y_pos - (car1.y_pos+60))
+                pygame.draw.line(self.screen, YELLOW, T1, T2)
+                self.screen.blit(font_20.render("      Distance: " + str(Distance), True, BLACK),[(T1[0] + T2[0])/2, (T1[1] + T2[1])/2])
                 #Handling the drawing of car spawn to screen
                 car_spawn.update()
                 car_spawn.draw(self.screen)
