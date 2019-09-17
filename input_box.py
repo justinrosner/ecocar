@@ -2,13 +2,15 @@
 This file outlines the class that can be used to setup input boxes for our demo
 '''
 
+# pylint: disable= E1101, R0913, R1710
+
 import pygame
 
 pygame.init()
 YELLOW = pygame.Color("#fcdb38")
 GREY = pygame.Color("#D3D3D3")
 BLACK = (0, 0, 0)
-FONT = pygame.font.Font(None ,32)
+FONT = pygame.font.Font(None, 32)
 
 class InputBox:
     '''
@@ -41,8 +43,8 @@ class InputBox:
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
-                    return(self.text)
-                elif event.key == pygame.K_BACKSPACE:
+                    return self.text
+                if event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode

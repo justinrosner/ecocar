@@ -6,24 +6,18 @@ This file contains the logic for anything related to the movement of a car
 
 import pygame
 
-
 BLACK = (0, 0, 0)
-
-def Lerp( From, To, Fraction ):
-    return From + Fraction * ( To - From )
 
 class Car:
     '''
     This is the general class for cars that we will use to describe both our car
     and the surrounding cars on the road
     '''
-    def __init__(self, x_pos=0, y_pos=0, d_x=4, d_y=0):
+    def __init__(self, x_pos=0, y_pos=0):
         self.image = ""
         self.x_pos = x_pos
         self.y_pos = y_pos
-        self.d_x = d_x
-        self.d_y = d_y
-        self.velocity = 50 # in kmh
+        self.velocity = 50.0 # in kmh
 
         # Arbitrary height and width of cars
         # Initial values are w=110, h=191
@@ -52,31 +46,15 @@ class Car:
         '''
         screen.blit(self.image, [self.x_pos, self.y_pos])
 
-    def move_x(self):
-        '''
-        Function to move the car along the x-axis
-        '''
-        self.x_pos += self.d_x
-
-    def move_y(self):
-        '''
-        Function to move the car along the y-axis
-        '''
-        self.y_pos += self.d_y
-
-    def velocity_control(self, num_in ):
+    def change_velocity(self, velocity):
         '''
         Method to change the velocity of the car
         Input:
-            new_v (int) - The new velocity of the car in km/h
+            velocity (double) - The new velocity of the car in km/h
         Output:
             None
         '''
-        self.target_velocity = num_in
-        self.velocity = round( Lerp( self.velocity, self.target_velocity, 1 / 32 ), 3 )
-        self.move_y()
-
-
+        self.velocity = round(velocity)
 
     def check_out_of_screen(self):
         '''

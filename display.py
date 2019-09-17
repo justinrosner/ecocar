@@ -8,9 +8,9 @@ display methods to the screen
 import os
 import pygame
 import math
-
 import cruise_control
 import input_box as ib
+import utils
 from car import Car
 
 # Define some basic coloursW
@@ -23,7 +23,6 @@ TEXT_COLOR = (250, 105, 10)
 
 CurrentLane = 1
 LaneSuperpositions = [ 180, 280, 380 ]
-CurrentNumber = 50
 
 class Game:
     '''
@@ -52,10 +51,11 @@ class Game:
         pygame.display.set_caption("EcoCAR DEV Challenge")
 
         # Creating the main car
-        player = Car(0, 800, 0, 0)
+        player = Car(0, 800)
         player.load_image("images/chevy.png")
 
-        car1 = Car(0, 100, 0, 0)
+        # Test for the second car
+        car1 = Car(0, 100)
         car1.load_image("images/chevy_black.png")
 
 
@@ -84,18 +84,11 @@ class Game:
             stripes.append([345, stripe_y])
             stripe_y += stripe_height + space
 
-
-
         collision = True
-        # 
+        CurrentLane = 1
+        LaneSuperpositions = [ 180, 280, 380 ]
         while not self.exit:
             # pygame event queue
-            global LaneSuperpositions
-            global CurrentLane
-            global CurrentNumber
-
-            player.velocity_control( CurrentNumber )
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.exit = True
@@ -104,48 +97,50 @@ class Game:
                 if collision and event.type == pygame.MOUSEBUTTONDOWN:
                     collision = False
                     player.x_pos = 280
-                    player.d_x = 0
-                    player.d_y =0
-
                     pygame.mouse.set_visible(True)
 
-                if not collision:
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_RIGHT:
-                            player.d_x = 4
-                        elif event.key == pygame.K_LEFT:
-                            player.d_x = -4
-                        elif event.key == pygame.K_UP:
-                            player.d_y = - 4
-                        elif event.key == pygame.K_DOWN:
-                            player.d_y = 4
-
-                    if event.type == pygame.KEYUP:
-                        if event.key == pygame.K_LEFT:
-                            player.d_x = 0
-                        elif event.key == pygame.K_RIGHT:
-                            player.d_x = 0
-                        elif event.key == pygame.K_UP:
-                            player.d_y = 0
-                        elif event.key == pygame.K_DOWN:
-                            player.d_y = 0
-
                 # handle the event for the velocity input box
-
                 new_velocity = velocity_input.handle_event(event)
                 new_car = car_spawn.handle_event(event)
-                
-                car1.x_pos = LaneSuperpositions[ CurrentLane ]
-                # Only change the car velocity when its a valid int between 0-100
-                if is_int(new_velocity) and int(new_velocity) in range(-1000, 1000):
-                    CurrentNumber = int(new_velocity) 
 
-                if is_int(new_car) and int(new_car) in range(-101, 101):           
+                change = False
+                update = False
+
+                # Only change the car velocity when its a valid int between 0-100
+                if utils.is_int(new_velocity) and int(new_velocity) in range(0, 101):
+                    target_velocity = int(new_velocity)
+                    change = True
+                    start_time = 0.0
+
+                # EVERYTHING BELOW IS FOR THE SPAWNING BOX
+
+                car1.x_pos = LaneSuperpositions[ CurrentLane ]
+                if utils.is_int(new_car) and int(new_car) in range(-101, 101):
                     car1.velocity = int(new_car)
                     car1.d_y = car1.velocity
 
-                    
+            if change:
+                update = True
+                change = False
+                time_for_accel = utils.calculate_time(player.velocity, target_velocity)
+                start_vel = player.velocity
+                start_time = pygame.time.get_ticks()
 
+            cur_time = pygame.time.get_ticks()
+            if update:
+                print(utils.ms_to_sec(cur_time - start_time), time_for_accel)
+            if update and utils.ms_to_sec(cur_time - start_time) < time_for_accel:
+                player.velocity = round(utils.update_velocity(start_vel, target_velocity,
+                                                        utils.ms_to_sec(cur_time - start_time)), 2)
+
+
+
+                # EVERYTHING BELOW IS FOR THE SPAWNING BOX
+
+                car1.x_pos = LaneSuperpositions[ CurrentLane ]
+                if utils.is_int(new_car) and int(new_car) in range(-101, 101):
+                    car1.velocity = int(new_car)
+                    car1.d_y = car1.velocity
 
             # --- Game logic should go here ie. function calls to cruise_control ---
 
@@ -153,17 +148,8 @@ class Game:
             self.screen.fill(GREY)
 
             if not collision:
-                # Drawing the stripes
-                for i in range(stripe_count):
-                    pygame.draw.rect(self.screen, WHITE, [stripes[i][0], stripes[i][1],
-                                                          stripe_width, stripe_height])
-                # Move the stripes
-                for i in range(stripe_count):
-                    # This accounts for speed at which the line moves
-                    stripes[i][1] += player.velocity / 10
-                    if stripes[i][1] > self.height:
-                        stripes[i][1] = -30 - stripe_height
-
+                self.draw_stripes(stripe_count, stripes, stripe_width, stripe_height,
+                             player.velocity)
 
                 # Drawing the outer lines to the screen
                 pygame.draw.lines(self.screen, YELLOW, False, [(165,0), (165,900)], 5)
@@ -178,10 +164,11 @@ class Game:
                 self.screen.blit(text_velocity, [445, 0])
                 velocity_input.draw(self.screen)
 
+                # Drawing the distance line between cars
+                Distance = abs(player.y_pos - car1.y_pos)
+                pygame.draw.line(self.screen, YELLOW, (car1.x_pos,car1.y_pos), (player.x_pos,player.y_pos))
 
-                Distance = abs( player.y_pos - car1.y_pos ) 
-                pygame.draw.line( self.screen, YELLOW, ( car1.x_pos,car1.y_pos ), ( player.x_pos,player.y_pos ) )
-                #Handling the drawing of car spawn textbook to screen
+                #Handling the drawing of car spawn to screen
                 car_spawn.update()
                 car_spawn.draw(self.screen)
 
@@ -190,12 +177,9 @@ class Game:
                 self.screen.blit(text_cur_velocity, [0, 0])
 
                 player.draw_image(self.screen)
-                player.move_x()
-                player.move_y()
                 player.check_out_of_screen()
 
                 car1.draw_image(self.screen)
-                car1.move_y()
 
                 pygame.display.flip()
 
@@ -222,18 +206,33 @@ class Game:
         window.blit(text_ins, [display_size[0] / 2 - 85, display_size[1] / 2 + 40])
         pygame.display.flip()
 
+    def draw_stripes(self, stripe_count, stripes, stripe_width, stripe_height, velocity):
+        '''
+        Method to draw the stripes to the road
+        Input:
+            stripe_count (int) - The number of stripes to draw to the screen
+            stripes ([int, int]) - An array of the positions of the stripes on the screen
+            stripe_width (int) - The pixel width of the stripes
+            stripe_height (int) - The pixrl height of the stripes
+            velocity (double) - The velocity of the car
+        Output:
+            None
+        '''
+        # Drawing the stripes
+        for i in range(stripe_count):
+            pygame.draw.rect(self.screen, WHITE, [stripes[i][0], stripes[i][1],
+                                                    stripe_width, stripe_height])
+        # Move the stripes
+        for i in range(stripe_count):
+            # This accounts for speed at which the line moves
+            stripes[i][1] += velocity / 10
+            if stripes[i][1] > self.height:
+                stripes[i][1] = -30 - stripe_height
 
-def is_int(string):
-    '''
-    Method to check if a given string is an integer
-    '''
-    try:
-        int(string)
-        return True
-    except ValueError:
-        return False
-    except TypeError:
-        return False
+    def draw_background(self, screen):
+        '''
+        This is am method to draw the background to the current screen
+        '''
 
 
 if __name__ == '__main__':
