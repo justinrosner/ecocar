@@ -25,12 +25,15 @@ def check_collision(player_x, player_y, player_width, player_height, car_x,
     return bool((player_x+player_width > car_x) and (player_x < car_x+car_width) and \
                 (player_y < car_y+car_height) and (player_y+player_height > car_y))
 
-def acc_scenario1(player_x, player_y, player_speed, car_x, car_y, car_speed, follow_dist): #####This assumes input in km/h, and following distance is either pixels
+def acc_scenario1(player_x, player_y, player_speed, car_x, car_y, car_speed, follow_dist): #####This assumes input in km/h, and following distance is either 2,3,4 depending on how far you want to follow
     player_ms = player_speed/3.6 #convert to m/s
     car_ms = car_speed/3.6 #convert to m/s
-    if player_x == car_x and abs(player_y - car_y) <= (follow_dist * 2):
+    accel = -10.04 
+    timeA = ((car_ms - player_ms)/accel) #time it takes to slow down using our acc
+    deltaD = ((player_ms - car_ms)/2)*timeA*(12) #distance shrunk between cars in pixels 
+    if player_x == car_x and abs(player_y - car_y) <= (follow_dist * deltaD):
         if (player_speed > car_speed):
-            return (2*follow_dist)/ ((car_ms + player_ms)*12) #This returns the time for deceleration
+            return timeA #This returns the time for deceleration
     return 0
 
 
@@ -51,11 +54,13 @@ def laneChange(direction, player_x, player_y):#direction from the press of butto
                 carY = carR1.y
                 carVel = carR1.velocity
 
+        car_ms = carVel/3.6 #convert to m/s
+
         if (abs(carY - player_y) <= (2*player.height)):#the safe range is gonna be 2 car lengths in front or behind
             return errorVariable #replace with whatever we want error to say   
         vrel=(((player.velocity-carVel)*1000)/3600)#relative velocity in m/s negative if we're slower
         deltaY = (player_y - carY)#negative if we're in front of car 
-        if (((deltaY > 0) and ((vrel*2*(12))<deltaY)) or ((deltaY < 0) and ((vrel*2*(12))>deltaY))):#the 12 is pixels per meter and 2 is 2 seconds
+        if ((((deltaY > 0) and ((vrel*2*(12))<deltaY)) or ((deltaY < 0) and ((vrel*2*(12))>deltaY))) and abs(vrel) < 20):#the 12 is pixels per meter and 2 is 2 seconds, the vrel<20 is important because anything above that will mean that they're not gonna have enough time to adjust speed
             return succVariable #replace with whatever you want success to be 
   
     return errorVariable
