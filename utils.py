@@ -79,4 +79,3 @@ def ms_to_sec(milli):
         The time inputted in seconds
     '''
     return milli / 1000
-
