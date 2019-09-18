@@ -25,12 +25,12 @@ def check_collision(player_x, player_y, player_width, player_height, car_x,
     return bool((player_x+player_width > car_x) and (player_x < car_x+car_width) and \
                 (player_y < car_y+car_height) and (player_y+player_height > car_y))
 
-def acc_scenario1(player_x, player_y, player_speed, car_x,
-                    car_y, car_speed, follow_dist):
-
-    if player_x == car_x and math.abs(player_y - car_y) <= (follow_dist * 2):
+def acc_scenario1(player_x, player_y, player_speed, car_x, car_y, car_speed, follow_dist): #####This assumes input in km/h, and following distance is either pixels
+    player_ms = player_speed/3.6 #convert to m/s
+    car_ms = car_speed/3.6 #convert to m/s
+    if player_x == car_x and abs(player_y - car_y) <= (follow_dist * 2):
         if (player_speed > car_speed):
-            return (car_speed**2 - player_speed**2)/ (2 * ((player_y - car_y) - follow_dist)) #This returns the deceleration value (will be negative)
+            return (2*follow_dist)/ ((car_ms + player_ms)*12) #This returns the time for deceleration
     return 0
 
 
