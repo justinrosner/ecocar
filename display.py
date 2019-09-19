@@ -5,6 +5,7 @@ display methods to the screen
 
 # pylint: disable=E1101
 
+import math
 import pygame
 import cruise_control
 import input_box as ib
@@ -133,25 +134,8 @@ class Game:
                     player.velocity = round(utils.update_velocity(start_vel, target_velocity,
                                                                   utils.ms_to_sec(cur_time - start_time)), 2)
 
-                # logic for lane changing
-                if buttons['left'].pressed and player.cur_lane != 0:
-                    if player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
-                        player.x_pos -= 2
-                    else:
-                        buttons['left'].pressed = False
-                        player.cur_lane -= 1
-                        player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
-                        buttons['left'].colour = GREY
-
-                if buttons['right'].pressed and player.cur_lane != 2:
-                    if player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
-                        player.x_pos += 2
-                    else:
-                        buttons['right'].pressed = False
-                        player.cur_lane += 1
-                        player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
-                        buttons['right'].colour = GREY
-
+                # Change lanes if needed
+                utils.lane_change(player, buttons)
 
                 # Methods to draw info the the screen
                 self.draw_stripes(stripe_count, stripes, stripe_width, stripe_height,
@@ -242,9 +226,12 @@ class Game:
             None
         '''
         # Drawing the distance line between cars
+        y_diff = front_car.y_pos - player.y_pos
+        x_diff = abs(front_car.x_pos - player.x_pos)
+        distance = round(math.sqrt(y_diff ** 2 + x_diff ** 2), 2)
+
         t_1 = (front_car.x_pos + 21, front_car.y_pos+ 60)
         t_2 = (player.x_pos + 21, player.y_pos)
-        distance = abs(player.y_pos - (front_car.y_pos+60))
         pygame.draw.line(self.screen, YELLOW, t_1, t_2)
         self.screen.blit(FONT_19.render(f"      Distance: {distance}", True, BLACK),
                          [(t_1[0] + t_2[0])/2, (t_1[1] + t_2[1])/2])

@@ -2,8 +2,11 @@
 This file contains a bunch of helper functions
 '''
 
+# Defining some constants
 BRAKE = -10.04
 ACCEL = 3.3
+GREY = (159, 163, 168)
+LANESUPERPOSITIONS = [180, 280, 380]
 
 def update_velocity(initial_velocity, target_velocity, elapsed_time):
     '''
@@ -79,3 +82,29 @@ def ms_to_sec(milli):
         The time inputted in seconds
     '''
     return milli / 1000
+
+def lane_change(player, buttons):
+    '''
+    This function checks if a button has been pressed for a lane change, if yes it will
+    then complete the lane change
+    Input:
+    Output:
+        None
+    '''
+    if buttons['left'].pressed and player.cur_lane != 0:
+        if player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
+            player.x_pos -= 2
+        else:
+            buttons['left'].pressed = False
+            player.cur_lane -= 1
+            player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+            buttons['left'].colour = GREY
+
+    if buttons['right'].pressed and player.cur_lane != 2:
+        if player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
+            player.x_pos += 2
+        else:
+            buttons['right'].pressed = False
+            player.cur_lane += 1
+            player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+            buttons['right'].colour = GREY
