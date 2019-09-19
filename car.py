@@ -59,7 +59,7 @@ class Car:
 
     def check_out_of_screen(self):
         '''
-        Function to see if the car has moved off of the visible screen
+        Method to see if the car has moved off of the visible screen
         '''
         if self.x_pos + self.width > 600 or self.x_pos < 0:
             self.x_pos -= self.d_x

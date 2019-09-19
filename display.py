@@ -9,6 +9,7 @@ import pygame
 import cruise_control
 import input_box as ib
 import utils
+import button as bt
 from car import Car
 
 # Define some basic colours
@@ -22,7 +23,7 @@ TEXT_COLOR = (250, 105, 10)
 # Load the fonts
 FONT_40 = pygame.font.SysFont("Arial", 40, True, False)
 FONT_30 = pygame.font.SysFont("Arial", 30, True, False)
-FONT_20 = pygame.font.SysFont("Arial", 20, True, False)
+FONT_19 = pygame.font.SysFont("Arial", 19, True, False)
 
 LANESUPERPOSITIONS = [180, 280, 380]
 
@@ -54,19 +55,19 @@ class Game:
         pygame.display.set_caption("EcoCAR DEV Challenge")
 
         # Creating the main car
-        player = Car(0, 800, 1)
+        player = Car(280, 800, 1)
         player.load_image("images/chevy.png")
 
         # Test for the second car
-        car1 = Car(0, 100, 1)
+        car1 = Car(280, 200, 1)
         car1.load_image("images/chevy_black.png")
 
+        # Setup the velocity input box
         velocity_input = ib.InputBox(480, 30, 50, 30, '')
-        car_spawn = ib.InputBox(480, 120, 50, 30, '')
 
         text_title = FONT_40.render("EcoCAR DEV Challenge", True, TEXT_COLOR)
         text_ins = FONT_30.render("Click to Run!", True, TEXT_COLOR)
-        text_velocity = FONT_20.render("Enter a velocity:", True, BLACK)
+        text_velocity = FONT_19.render("Enter a velocity:", True, BLACK)
 
         # Setup the stripes.
         stripes = []
@@ -80,6 +81,12 @@ class Game:
             stripes.append([255, stripe_y])
             stripes.append([345, stripe_y])
             stripe_y += stripe_height + space
+
+        # Setup the buttons
+        buttons = dict()
+        buttons['spawn'] = bt.Button(60, 80, 30, 30, YELLOW, GREY)
+        buttons['left'] = bt.Button(450, 150, 30, 30, YELLOW, GREY)
+        buttons['right'] = bt.Button(550, 150, 30, 30, YELLOW, GREY)
 
         collision = True
 
@@ -97,7 +104,10 @@ class Game:
 
                 # handle the event for the velocity input box
                 new_velocity = velocity_input.handle_event(event)
-                new_car = car_spawn.handle_event(event)
+
+                # Handle the event for all of the various buttons
+                for button in buttons.values():
+                    button.handle_event(event)
 
                 # Only change the car velocity when its a valid int between 0-100
                 if utils.is_int(new_velocity) and int(new_velocity) in range(0, 101):
@@ -105,16 +115,11 @@ class Game:
                     self.change = True
                     start_time = 0.0
 
-                # EVERYTHING BELOW IS FOR THE SPAWNING BOX
-                car1.x_pos = LANESUPERPOSITIONS[car1.cur_lane]
-                if utils.is_int(new_car) and int(new_car) in range(-101, 101):
-                    car1.velocity = int(new_car)
-                    car1.d_y = car1.velocity
-
             #  Screen-clearing code
             self.screen.fill(GREY)
 
             if not collision:
+                # logic for smooth acceleration
                 if self.change:
                     self.update = True
                     self.change = False
@@ -128,15 +133,32 @@ class Game:
                     player.velocity = round(utils.update_velocity(start_vel, target_velocity,
                                                                   utils.ms_to_sec(cur_time - start_time)), 2)
 
+                # logic for lane changing
+                if buttons['left'].pressed and player.cur_lane != 0:
+                    if player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
+                        player.x_pos -= 2
+                    else:
+                        buttons['left'].pressed = False
+                        player.cur_lane -= 1
+                        player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+                        buttons['left'].colour = GREY
+
+                if buttons['right'].pressed and player.cur_lane != 2:
+                    if player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
+                        player.x_pos += 2
+                    else:
+                        buttons['right'].pressed = False
+                        player.cur_lane += 1
+                        player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+                        buttons['right'].colour = GREY
+
+
                 # Methods to draw info the the screen
                 self.draw_stripes(stripe_count, stripes, stripe_width, stripe_height,
                                   player.velocity)
                 self.draw_background(velocity_input, text_velocity, player.velocity)
                 self.draw_distance_line(car1, player)
-
-                #Handling the drawing of car spawn to screen
-                car_spawn.update()
-                car_spawn.draw(self.screen)
+                self.draw_buttons(buttons)
 
                 player.draw_image(self.screen)
                 player.check_out_of_screen()
@@ -206,7 +228,7 @@ class Game:
         velocity_input.draw(self.screen)
 
         # Writing the current velocity to the screen
-        text_cur_velocity = FONT_20.render(f"Current Velocity: {velocity}", True, BLACK)
+        text_cur_velocity = FONT_19.render(f"Current Velocity:{velocity}", True, BLACK)
         self.screen.blit(text_cur_velocity, [0, 0])
 
     def draw_distance_line(self, front_car, player):
@@ -224,8 +246,23 @@ class Game:
         t_2 = (player.x_pos + 21, player.y_pos)
         distance = abs(player.y_pos - (front_car.y_pos+60))
         pygame.draw.line(self.screen, YELLOW, t_1, t_2)
-        self.screen.blit(FONT_20.render("      Distance: " + str(distance), True, BLACK),
+        self.screen.blit(FONT_19.render(f"      Distance: {distance}", True, BLACK),
                          [(t_1[0] + t_2[0])/2, (t_1[1] + t_2[1])/2])
+
+    def draw_buttons(self, buttons):
+        '''
+        Method to draw the lane change and spawn buttons to the screen
+        Input:
+            buttons (dict of button objs) - Buttons to be drawn to the screen
+        Output:
+            None
+        '''
+        # Draw the text for the car spawn button and the lane change buttons
+        self.screen.blit(FONT_19.render("Click to spawn car:", True, BLACK), [0, 50])
+        self.screen.blit(FONT_19.render("Change lanes:", True, BLACK), [460, 115])
+
+        for button in buttons.values():
+            button.draw_button(self.screen)
 
 
 if __name__ == '__main__':
