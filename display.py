@@ -48,6 +48,7 @@ class Game:
         self.exit = False
         self.change = False
         self.update = False
+        self.cars_on_screen = 0
 
     def run(self):
         '''
@@ -55,13 +56,14 @@ class Game:
         '''
         pygame.display.set_caption("EcoCAR DEV Challenge")
 
-        # Creating the main car
-        player = Car(280, 800, 1)
-        player.load_image("images/chevy.png")
+        # Creating a set of all cars currently on the screen
+        cars_on_road = set()
 
-        # Test for the second car
-        car1 = Car(280, 200, 1)
-        car1.load_image("images/chevy_black.png")
+        # Creating the main car
+        player = Car(280, 800, 1, 50)
+        player.load_image("images/chevy.png")
+        cars_on_road.add(player)
+        self.cars_on_screen += 1
 
         # Setup the velocity input box
         velocity_input = ib.InputBox(480, 30, 50, 30, '')
@@ -110,7 +112,7 @@ class Game:
                 for button in buttons.values():
                     button.handle_event(event)
 
-                # Only change the car velocity when its a valid int between 0-100
+                # Only take the input when its a valid int between 0-100
                 if utils.is_int(new_velocity) and int(new_velocity) in range(0, 101):
                     target_velocity = int(new_velocity)
                     self.change = True
@@ -133,6 +135,12 @@ class Game:
                 if self.update and utils.ms_to_sec(cur_time - start_time) < time_for_accel:
                     player.velocity = round(utils.update_velocity(start_vel, target_velocity,
                                                                   utils.ms_to_sec(cur_time - start_time)), 2)
+                # Spawn another car if needed
+                possible_car = utils.car_spwan(buttons['spawn'], cars_on_road, self.cars_on_screen)
+                if possible_car != None:
+                    possible_car.load_image("images/chevy_black.png")
+                    cars_on_road.add(possible_car)
+                    self.cars_on_screen += 1
 
                 # Change lanes if needed
                 utils.lane_change(player, buttons)
@@ -141,13 +149,30 @@ class Game:
                 self.draw_stripes(stripe_count, stripes, stripe_width, stripe_height,
                                   player.velocity)
                 self.draw_background(velocity_input, text_velocity, player.velocity)
-                self.draw_distance_line(car1, player)
+                #self.draw_distance_line(car1, player)
                 self.draw_buttons(buttons)
 
-                player.draw_image(self.screen)
-                player.check_out_of_screen()
+                # Creating a set of cars in the same lane as the main car
+                cars_in_lane = set()
+                closest_car = None
+                min_distance = 10000 # Arbitrary value that is impossible for the cars to have
 
-                car1.draw_image(self.screen)
+                # draw the cars to the screen and get the set of cars in the same lane as
+                # the main car
+                for car in cars_on_road:
+                    # Check to get the closest car infront of the main car
+                    if car.cur_lane == player.cur_lane and \
+                       (car.x_pos != player.x_pos or car.y_pos != player.y_pos):
+                        cars_in_lane.add(car)
+
+                        if player.y_pos - car.y_pos < min_distance:
+                            min_distance = player.y_pos - car.y_pos
+                            closest_car = car
+
+                    car.draw_image(self.screen)
+
+                if closest_car != None:
+                    self.draw_distance_line(closest_car, player)
 
                 pygame.display.flip()
 
