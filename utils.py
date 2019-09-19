@@ -88,6 +88,8 @@ def lane_change(player, buttons):
     This function checks if a button has been pressed for a lane change, if yes it will
     then complete the lane change
     Input:
+        player (Car obj) - The main car that we are moving
+        buttons (dict of buttons) - The left and right lane change buttons
     Output:
         None
     '''
@@ -99,6 +101,8 @@ def lane_change(player, buttons):
             player.cur_lane -= 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
             buttons['left'].colour = GREY
+    else:
+        buttons['left'].colour = GREY
 
     if buttons['right'].pressed and player.cur_lane != 2:
         if player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
@@ -108,3 +112,5 @@ def lane_change(player, buttons):
             player.cur_lane += 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
             buttons['right'].colour = GREY
+    else:
+        buttons['right'].colour = GREY
