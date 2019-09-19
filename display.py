@@ -25,6 +25,7 @@ CurrentLane = 1
 LaneSuperpositions = [ 180, 280, 380 ]
 change = False
 update = False
+flag = True 
 
 class Game:
     '''
@@ -53,11 +54,11 @@ class Game:
         pygame.display.set_caption("EcoCAR DEV Challenge")
 
         # Creating the main car
-        player = Car(0, 800)
+        player = Car(0, 750, 100)
         player.load_image("images/chevy.png")
 
         # Test for the second car
-        car1 = Car(0, 100)
+        car1 = Car(0, 50, 0)
         car1.load_image("images/chevy_black.png")
 
 
@@ -92,6 +93,7 @@ class Game:
         while not self.exit:
             global change
             global update
+            global flag
             # pygame event queue
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -116,17 +118,44 @@ class Game:
                 # EVERYTHING BELOW IS FOR THE SPAWNING BOX
 
                 car1.x_pos = LaneSuperpositions[ CurrentLane ]
-                if utils.is_int(new_car) and int(new_car) in range(-101, 101):
-                    car1.velocity = int(new_car)
-                    car1.d_y = car1.velocity
+                if utils.is_int(new_car) and int(new_car) in range(-101, 201):
+                    car1.velocity = int( (player.velocity - int(new_car))  / 10 )
+                    car1.realVel = int(new_car)
 
-            # --- Game logic should go here ie. function calls to cruise_control ---
+
+
+              
+
+            # --- Game logic should go here ie. function calls to cruise_control ---'
+
+
+
+            
 
             #  Screen-clearing code
             self.screen.fill(GREY)
 
             if not collision:
 
+                # Drawing the distance line between cars
+                T1 = (car1.x_pos + 21, car1.y_pos+ 60)
+                T2 = (player.x_pos + 21, player.y_pos)
+                dist_between = abs(player.y_pos - (car1.y_pos+60)) / 12
+                #follow_dist = player.velocity
+                           
+
+                if dist_between < 40 and flag:
+                    change = True
+                    target_velocity = car1.realVel
+                    start_time = 0.0
+                    flag = False
+
+
+                if dist_between < 20:
+                    car1.velocity = 0                   
+
+
+                
                 if change:
                     update = True
                     change = False
@@ -155,24 +184,26 @@ class Game:
                 self.screen.blit(text_velocity, [445, 0])
                 velocity_input.draw(self.screen)
 
-                # Drawing the distance line between cars
-                T1 = (car1.x_pos + 21, car1.y_pos+ 60)
-                T2 = (player.x_pos + 21, player.y_pos)
-                Distance = abs(player.y_pos - (car1.y_pos+60))
+           
+
+
                 pygame.draw.line(self.screen, YELLOW, T1, T2)
-                self.screen.blit(font_20.render("      Distance: " + str(Distance), True, BLACK),[(T1[0] + T2[0])/2, (T1[1] + T2[1])/2])
+                self.screen.blit(font_20.render("      Distance: " + str(round(dist_between)) + "m", True, BLACK),[(T1[0] + T2[0])/2, (T1[1] + T2[1])/2])
+                
+
                 #Handling the drawing of car spawn to screen
                 car_spawn.update()
                 car_spawn.draw(self.screen)
 
                 # Writing the current velocity to the screen
-                text_cur_velocity = font_20.render(f"Current Velocity: {player.velocity}", True, BLACK)
+                text_cur_velocity = font_20.render("Current Velocity: " + str(round(player.velocity)), True, BLACK)
                 self.screen.blit(text_cur_velocity, [0, 0])
 
                 player.draw_image(self.screen)
                 player.check_out_of_screen()
 
                 car1.draw_image(self.screen)
+                car1.move_y()
 
                 pygame.display.flip()
 

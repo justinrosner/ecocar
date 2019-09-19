@@ -38,6 +38,7 @@ def acc_scenario1(player_x, player_y, player_speed, car_x, car_y, car_speed, fol
 
 
 '''Starts'''
+'''Starts'''
 def laneChange(direction, player_x, player_y):#direction from the press of button, player x
     #the leftLane and stuff is just the set coordinates for the lanes\
     if (((player_x == leftLane) and (direction == left)) or ((player_x == rightLane) and (direction == right))):#trying to turn into barrier
@@ -57,12 +58,20 @@ def laneChange(direction, player_x, player_y):#direction from the press of butto
         car_ms = carVel/3.6 #convert to m/s
 
         if (abs(carY - player_y) <= (2*player.height)):#the safe range is gonna be 2 car lengths in front or behind
-            return errorVariable #replace with whatever we want error to say   
+            return errorVariable #replace with whatever we want error to say
         vrel=(((player.velocity-carVel)*1000)/3600)#relative velocity in m/s negative if we're slower
-        deltaY = (player_y - carY)#negative if we're in front of car 
+        deltaY = (player_y - carY)#negative if we're in front of car
         if ((((deltaY > 0) and ((vrel*2*(12))<deltaY)) or ((deltaY < 0) and ((vrel*2*(12))>deltaY))) and abs(vrel) < 20):#the 12 is pixels per meter and 2 is 2 seconds, the vrel<20 is important because anything above that will mean that they're not gonna have enough time to adjust speed
-            return succVariable #replace with whatever you want success to be 
-  
+            return succVariable #replace with whatever you want success to be
+
     return errorVariable
-    
+
     '''Ends'''
+
+
+def adjust_speed(distance, follow_dist):
+
+    if distance >= follow_dist*2:
+        return True
+
+    return False

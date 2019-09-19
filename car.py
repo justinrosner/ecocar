@@ -13,16 +13,20 @@ class Car:
     This is the general class for cars that we will use to describe both our car
     and the surrounding cars on the road
     '''
-    def __init__(self, x_pos=0, y_pos=0):
+    def __init__(self, x_pos=0, y_pos=0, velocity=0):
         self.image = ""
         self.x_pos = x_pos
         self.y_pos = y_pos
-        self.velocity = 50.0 # in kmh
+        self.velocity = velocity # in kmh
+        self.realVel = 10;
 
         # Arbitrary height and width of cars
         # Initial values are w=110, h=191
         self.width = 42
         self.height = 60
+
+    def move_y(self):
+        self.y_pos += self.velocity
 
     def load_image(self, img):
         '''
