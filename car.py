@@ -5,6 +5,9 @@ This file contains the logic for anything related to the movement of a car
 # pylint: disable= E0611
 
 import pygame
+import utils
+
+
 
 BLACK = (0, 0, 0)
 
@@ -13,20 +16,17 @@ class Car:
     This is the general class for cars that we will use to describe both our car
     and the surrounding cars on the road
     '''
-    def __init__(self, x_pos=0, y_pos=0, velocity=0):
+    def __init__(self, x_pos=0, y_pos=0, start_lane=1, velocity=50):
         self.image = ""
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.velocity = velocity # in kmh
-        self.realVel = 10;
+        self.cur_lane = start_lane
 
         # Arbitrary height and width of cars
         # Initial values are w=110, h=191
         self.width = 42
         self.height = 60
-
-    def move_y(self):
-        self.y_pos += self.velocity
 
     def load_image(self, img):
         '''
@@ -62,7 +62,11 @@ class Car:
 
     def check_out_of_screen(self):
         '''
-        Function to see if the car has moved off of the visible screen
+        Method to see if the car has moved off of the visible screen
         '''
         if self.x_pos + self.width > 600 or self.x_pos < 0:
             self.x_pos -= self.d_x
+
+    def move_spawned_cars(self, player_velocity):
+        rel_velocity = (player_velocity - self.velocity) / 10
+        self.y_pos += rel_velocity

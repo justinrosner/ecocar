@@ -2,8 +2,15 @@
 This file contains a bunch of helper functions
 '''
 
+import random
+from car import Car
+from cruise_control import check_collision
+
+# Defining some constants
 BRAKE = -10.04
 ACCEL = 3.3
+GREY = (159, 163, 168)
+LANESUPERPOSITIONS = [180, 280, 380]
 
 def update_velocity(initial_velocity, target_velocity, elapsed_time):
     '''
@@ -79,4 +86,75 @@ def ms_to_sec(milli):
         The time inputted in seconds
     '''
     return milli / 1000
+
+def lane_change(player, buttons):
+    '''
+    This function checks if a button has been pressed for a lane change, if yes it will
+    then complete the lane change
+    Input:
+        player (Car obj) - The main car that we are moving
+        buttons (dict of buttons) - The left and right lane change buttons
+    Output:
+        None
+    '''
+    if buttons['left'].pressed and player.cur_lane != 0:
+        if player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
+            player.x_pos -= 2
+        else:
+            buttons['left'].pressed = False
+            player.cur_lane -= 1
+            player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+            buttons['left'].colour = GREY
+        return True
+
+    else:
+        buttons['left'].colour = GREY
+
+
+    if buttons['right'].pressed and player.cur_lane != 2:
+        if player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
+            player.x_pos += 2
+        else:
+            buttons['right'].pressed = False
+            player.cur_lane += 1
+            player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+            buttons['right'].colour = GREY
+        return True
+    else:
+        buttons['right'].colour = GREY
+        return False
+
+def car_spwan(spawn_button, cars_on_road, cars_on_screen):
+    '''
+    This function spawns a car with a random speed and lane
+    Input:
+        spawn_button (button obj) - The button that when pressed will spawn a car
+        cars_on_road (set Car objs) - A set containing all of the cars on screen
+        cars_on_screen (int) - A value denoting how many cars are on the screen
+    Output:
+        - None if the button is not pressed or the screen is full
+        - Otherwise a car object is returned for the car to be created
+    '''
+    if spawn_button.pressed and cars_on_screen < 10:
+        # Set the button back to its unpressed state and change colour back to GREY
+        spawn_button.pressed = not spawn_button.pressed
+        spawn_button.colour = GREY
+
+        # Randomly generate the x and y positions of the new car
+        lane = random.randint(0,2)
+        y_pos = random.randint(0,600)
+        x_pos = LANESUPERPOSITIONS[lane]
+
+        # Randomly generate the speed of the new car
+        velocity = random.randint(50, 100)
+        print(velocity)
+
+        # Checking if the car overlaps with any other cars
+        for car in cars_on_road:
+            while check_collision(x_pos, y_pos, car.x_pos, car.y_pos):
+                lane = random.randint(0,2)
+                y_pos = random.randint(0,800)
+                x_pos = LANESUPERPOSITIONS[lane]
+        return Car(x_pos, y_pos, lane, velocity)
+
 
