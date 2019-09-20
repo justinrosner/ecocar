@@ -51,7 +51,6 @@ class InputBox:
 
                 self.text_surface = FONT.render(self.text, True, BLACK)
 
-
     def update(self):
         '''
         Method to resize the box if the text is too long

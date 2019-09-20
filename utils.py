@@ -3,8 +3,8 @@ This file contains a bunch of helper functions
 '''
 
 import random
+import cruise_control
 from car import Car
-from cruise_control import check_collision
 
 # Defining some constants
 BRAKE = -10.04
@@ -17,9 +17,9 @@ def update_velocity(initial_velocity, target_velocity, elapsed_time):
     This is a function that will be called to show the acceleration and deceleration of the
     car smoothly
     Input:
-        initial_velocity (double) - The initial velocity for the car
-        target_velocity (double) - The target velocity for the car
-        elapsed_time (double) - The time that has passed since the car started accelerating
+        initial_velocity (float) - The initial velocity for the car
+        target_velocity (float) - The target velocity for the car
+        elapsed_time (float) - The time that has passed since the car started accelerating
     Output:
         A double representing the updated speed of the car
     '''
@@ -37,6 +37,8 @@ def calculate_time(initial_velocity, target_velocity):
     Input:
         initial_velocity (double) - The current velocity of the car
         target_velocity (double) - The desired velocity of the car
+    Output:
+        The time it will take in seconds to get to our desired speed
     '''
     cur = kmh_to_ms(initial_velocity)
     target = kmh_to_ms(target_velocity)
@@ -87,18 +89,22 @@ def ms_to_sec(milli):
     '''
     return milli / 1000
 
-def lane_change(player, buttons):
+def lane_change(player, buttons, cars_on_road):
     '''
     This function checks if a button has been pressed for a lane change, if yes it will
     then complete the lane change
     Input:
         player (Car obj) - The main car that we are moving
         buttons (dict of buttons) - The left and right lane change buttons
+        cars_on_road (dict of Car objs) - All of the cars currently on the road
     Output:
         None
     '''
-    if buttons['left'].pressed and player.cur_lane != 0:
-        if player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
+    change = False
+
+    if buttons['left'].pressed:
+        change = cruise_control.check_lane_change(0, player, cars_on_road)
+        if change and player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
             player.x_pos -= 2
         else:
             buttons['left'].pressed = False
@@ -108,8 +114,9 @@ def lane_change(player, buttons):
     else:
         buttons['left'].colour = GREY
 
-    if buttons['right'].pressed and player.cur_lane != 2:
-        if player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
+    if buttons['right'].pressed:
+        change = cruise_control.check_lane_change(1, player, cars_on_road)
+        if change and player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
             player.x_pos += 2
         else:
             buttons['right'].pressed = False
@@ -146,10 +153,8 @@ def car_spwan(spawn_button, cars_on_road, cars_on_screen):
 
         # Checking if the car overlaps with any other cars
         for car in cars_on_road:
-            while check_collision(x_pos, y_pos, car.x_pos, car.y_pos):
+            while cruise_control.check_collision(x_pos, y_pos, car.x_pos, car.y_pos):
                 lane = random.randint(0,2)
                 y_pos = random.randint(0,800)
                 x_pos = LANESUPERPOSITIONS[lane]
         return Car(x_pos, y_pos, lane, velocity)
-
-

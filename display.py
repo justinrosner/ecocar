@@ -62,7 +62,6 @@ class Game:
         # Creating the main car
         player = Car(280, 800, 1, 50)
         player.load_image("images/chevy.png")
-        cars_on_road.add(player)
         self.cars_on_screen += 1
 
         # Setup the velocity input box
@@ -90,6 +89,9 @@ class Game:
         buttons['spawn'] = bt.Button(60, 80, 30, 30, YELLOW, GREY)
         buttons['left'] = bt.Button(450, 150, 30, 30, YELLOW, GREY)
         buttons['right'] = bt.Button(550, 150, 30, 30, YELLOW, GREY)
+        buttons['close'] = bt.Button(470, 300, 30, 30, YELLOW, GREY)
+        buttons['medium'] = bt.Button(470, 350, 30, 30, YELLOW, GREY)
+        buttons['far'] = bt.Button(470, 400, 30, 30, YELLOW, GREY)
 
         collision = True
 
@@ -143,14 +145,14 @@ class Game:
                     self.cars_on_screen += 1
 
                 # Change lanes if needed
-                utils.lane_change(player, buttons)
+                utils.lane_change(player, buttons, cars_on_road)
 
                 # Methods to draw info the the screen
                 self.draw_stripes(stripe_count, stripes, stripe_width, stripe_height,
                                   player.velocity)
                 self.draw_background(velocity_input, text_velocity, player.velocity)
-                #self.draw_distance_line(car1, player)
                 self.draw_buttons(buttons)
+                self.draw_lane_change_lines(player, BLACK, BLACK)
 
                 # Creating a set of cars in the same lane as the main car
                 cars_in_lane = set()
@@ -161,8 +163,7 @@ class Game:
                 # the main car
                 for car in cars_on_road:
                     # Check to get the closest car infront of the main car
-                    if car.cur_lane == player.cur_lane and \
-                       (car.x_pos != player.x_pos or car.y_pos != player.y_pos):
+                    if car.cur_lane == player.cur_lane:
                         cars_in_lane.add(car)
 
                         if player.y_pos - car.y_pos < min_distance:
@@ -170,6 +171,7 @@ class Game:
                             closest_car = car
 
                     car.draw_image(self.screen)
+                player.draw_image(self.screen)
 
                 if closest_car != None:
                     self.draw_distance_line(closest_car, player)
@@ -273,8 +275,42 @@ class Game:
         self.screen.blit(FONT_19.render("Click to spawn car:", True, BLACK), [0, 50])
         self.screen.blit(FONT_19.render("Change lanes:", True, BLACK), [460, 115])
 
+        # Draw the text for the following distance buttons
+        self.screen.blit(FONT_19.render("Follow Distance:", True, BLACK), [450, 270])
+        self.screen.blit(FONT_19.render("Close", True, BLACK), [510, 305])
+        self.screen.blit(FONT_19.render("Mid", True, BLACK), [510, 355])
+        self.screen.blit(FONT_19.render("Far", True, BLACK), [510, 405])
+
         for button in buttons.values():
             button.draw_button(self.screen)
+
+    def draw_lane_change_lines(self, player, left_colour, right_colour):
+        '''
+        This method will draw the lines to the screen that indicate if a requested lane
+        change was valid or invalid
+        Input:
+            player (Car obj) - The main car object which we are drawing the lines from
+            left_colour (int, int, int) - The RGB colour for the left lane signals
+            right_colour (int, int, int) - The RGB colour for the right lane signals
+        Output:
+            None
+        '''
+        top_left_1 = (player.x_pos + 2, player.y_pos + 5)
+        top_left_2 = (player.x_pos - 20, player.y_pos - 60)
+        pygame.draw.line(self.screen, left_colour, top_left_1, top_left_2)
+
+        bottom_left_1 = (player.x_pos + 3, player.y_pos + 56)
+        bottom_left_2 = (player.x_pos - 20, player.y_pos + 100)
+        pygame.draw.line(self.screen, left_colour, bottom_left_1, bottom_left_2)
+
+        top_right_1 = (player.x_pos + 40, player.y_pos + 5)
+        top_right_2 = (player.x_pos + 62, player.y_pos - 60)
+        pygame.draw.line(self.screen, right_colour, top_right_1, top_right_2)
+
+        bottom_right_1 = (player.x_pos + 40, player.y_pos + 56)
+        bottom_right_2 = (player.x_pos + 62, player.y_pos + 100)
+        pygame.draw.line(self.screen, right_colour, bottom_right_1, bottom_right_2)
+
 
 
 if __name__ == '__main__':
