@@ -101,12 +101,14 @@ def lane_change(player, buttons, cars_on_road):
         None
     '''
     change = False
+    started = True
 
-    if buttons['left'].pressed:
+    if buttons['left'].pressed and player.x_pos != LANESUPERPOSITIONS[0]:
         change = cruise_control.check_lane_change(0, player, cars_on_road)
         if change and player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
+            started = True
             player.x_pos -= 2
-        else:
+        elif started:
             buttons['left'].pressed = False
             player.cur_lane -= 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
@@ -114,11 +116,12 @@ def lane_change(player, buttons, cars_on_road):
     else:
         buttons['left'].colour = GREY
 
-    if buttons['right'].pressed:
+    if buttons['right'].pressed and player.x_pos != LANESUPERPOSITIONS[2]:
         change = cruise_control.check_lane_change(1, player, cars_on_road)
         if change and player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
+            started = True
             player.x_pos += 2
-        else:
+        elif started:
             buttons['right'].pressed = False
             player.cur_lane += 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
