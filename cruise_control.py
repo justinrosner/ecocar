@@ -2,7 +2,6 @@
 This file contains the logic for the cruise control algorithms
 '''
 
-import math
 import utils
 
 # Defining some constants
@@ -93,7 +92,7 @@ def check_lane_change(direction, car_1, cars_on_road):
     # This first check is accounting for the case when the cars try to turn off the road
     if (car_1.x_pos == LANESUPERPOSITIONS[0] and direction == 0) or \
         (car_1.x_pos == LANESUPERPOSITIONS[2] and direction == 1):
-       return False
+        return False
 
     # All of the following scenarios will follow the same general set of guidelines:
     # 1. The car will only be allowed to change lanes if there is no car in the zone

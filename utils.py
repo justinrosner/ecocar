@@ -98,7 +98,7 @@ def lane_change(player, buttons, cars_on_road):
         buttons (dict of buttons) - The left and right lane change buttons
         cars_on_road (dict of Car objs) - All of the cars currently on the road
     Output:
-        None
+        The colours that the lange change indicators should be filled in on the screen
     '''
     change = False
 
@@ -106,13 +106,12 @@ def lane_change(player, buttons, cars_on_road):
         change = cruise_control.check_lane_change(0, player, cars_on_road)
         if change and player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
             player.x_pos -= 2
-            return
 
-        started = False
-        buttons['left'].pressed = False
-        player.cur_lane -= 1
-        player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
-        buttons['left'].colour = GREY
+        else:
+            buttons['left'].pressed = False
+            player.cur_lane -= 1
+            player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+            buttons['left'].colour = GREY
     else:
         buttons['left'].colour = GREY
 
@@ -120,12 +119,12 @@ def lane_change(player, buttons, cars_on_road):
         change = cruise_control.check_lane_change(1, player, cars_on_road)
         if change and player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
             player.x_pos += 2
-            return
 
-        buttons['right'].pressed = False
-        player.cur_lane += 1
-        player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
-        buttons['right'].colour = GREY
+        else:
+            buttons['right'].pressed = False
+            player.cur_lane += 1
+            player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
+            buttons['right'].colour = GREY
     else:
         buttons['right'].colour = GREY
 
@@ -146,8 +145,8 @@ def car_spwan(spawn_button, cars_on_road, cars_on_screen):
         spawn_button.colour = GREY
 
         # Randomly generate the x and y positions of the new car
-        lane = random.randint(0,2)
-        y_pos = random.randint(0,800)
+        lane = random.randint(0, 2)
+        y_pos = random.randint(0, 800)
         x_pos = LANESUPERPOSITIONS[lane]
 
         # Randomly generate the speed of the new car
@@ -157,7 +156,8 @@ def car_spwan(spawn_button, cars_on_road, cars_on_screen):
         # Checking if the car overlaps with any other cars
         for car in cars_on_road:
             while cruise_control.check_collision(x_pos, y_pos, car.x_pos, car.y_pos):
-                lane = random.randint(0,2)
-                y_pos = random.randint(0,800)
+                lane = random.randint(0, 2)
+                y_pos = random.randint(0, 800)
                 x_pos = LANESUPERPOSITIONS[lane]
+
         return Car(x_pos, y_pos, lane, velocity)

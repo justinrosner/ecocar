@@ -3,6 +3,8 @@ This file contains all of the logic pertaining to the various buttons that this
 demo requires
 '''
 
+# pylint: disable= E1101
+
 import pygame
 from display import YELLOW, GREY
 
