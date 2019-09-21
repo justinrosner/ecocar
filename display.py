@@ -52,7 +52,8 @@ class Game:
         self.flag = True
         self.cars_on_screen = 0
         self.target_velocity = 30
-        self.start_time = 0.0
+        self.start_time = 0.
+        self.closest_car = None
 
     def run(self):
         '''
@@ -162,38 +163,43 @@ class Game:
 
                 # Creating a set of cars in the same lane as the main car
                 cars_in_lane = set()
-                closest_car = None
+
                 min_distance = 10000 # Arbitrary value that is impossible for the cars to have
 
                 # draw the cars to the screen and get the set of cars in the same lane as
                 # the main car
                 for car in cars_on_road:
-                    if car.y_pos != player.y_pos and car.x_pos != player.x_pos:
+
+                    if car.check_out_of_screen():
+                        cars_on_road.remove(car)
+                        self.cars_on_screen -= 1
+                        break
+
+                    if not (car is player):
                         car.move_spawned_cars(player.velocity)
 
 
-
-
-                    # Check to get the closest car infront of the main car
-                    if car.cur_lane == player.cur_lane and \
-                       (car.x_pos != player.x_pos or car.y_pos != player.y_pos):
-                        cars_in_lane.add(car)
-
-
-                        if player.y_pos - car.y_pos < min_distance:
+                        if car.cur_lane == player.cur_lane and player.y_pos - car.y_pos < min_distance:
                             min_distance = player.y_pos - car.y_pos
-                            closest_car = car
+                            #if not(self.closest_car is car):
+                            #    self.flag = True
+
+                            self.closest_car = car
+
+
+                            
+
 
 
                     car.draw_image(self.screen)
-                    self.screen.blit(FONT_19.render(str(car.velocity), True, RED),[car.x_pos, car.y_pos])
+                    self.screen.blit(FONT_19.render(str(car.velocity), True, RED),[car.x_pos + 21, car.y_pos + 30])
                     
 
 
-                if closest_car != None:
-                    distance = self.draw_distance_line(closest_car, player)
+                if self.closest_car != None and self.closest_car.cur_lane == player.cur_lane :
+                    distance = self.draw_distance_line(self.closest_car, player)
                     follow_dist = 800
-                    self.acc_scenario1(distance, closest_car, follow_dist)
+                    self.acc_scenario1(distance, follow_dist)
                     
 
 
@@ -279,12 +285,12 @@ class Game:
         # Drawing the distance line between cars
         y_diff = front_car.y_pos - player.y_pos
         x_diff = abs(front_car.x_pos - player.x_pos)
-        distance = round(math.sqrt(y_diff ** 2 + x_diff ** 2), 2)
+        distance = round(math.sqrt(y_diff ** 2 + x_diff ** 2), 2) / 12
 
         t_1 = (front_car.x_pos + 21, front_car.y_pos+ 60)
         t_2 = (player.x_pos + 21, player.y_pos)
         pygame.draw.line(self.screen, YELLOW, t_1, t_2)
-        self.screen.blit(FONT_19.render(f"      Distance: {distance}", True, BLACK),
+        self.screen.blit(FONT_19.render(f"      Distance: {distance} m", True, BLACK),
                          [(t_1[0] + t_2[0])/2, (t_1[1] + t_2[1])/2])
 
         return distance
@@ -304,10 +310,10 @@ class Game:
         for button in buttons.values():
             button.draw_button(self.screen)
 
-    def acc_scenario1(self, distance, closest_car, follow_dist):
+    def acc_scenario1(self, distance, follow_dist):
         if self.flag and distance <= follow_dist * 2:
             self.change = True
-            self.target_velocity = closest_car.velocity
+            self.target_velocity = self.closest_car.velocity
             self.start_time = 0.0
             self.flag = False
 
