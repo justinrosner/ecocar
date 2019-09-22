@@ -100,8 +100,8 @@ def check_lane_change(direction, car_1, cars_on_road):
     # 2. The cars behind the main car in the adjacent lane they wish to turn to are not
     #    going more than 20m/s faster than the main car (so they have time to slow down)
 
-    lower = car_1.y_pos - 2 * car_1.height
-    upper = car_1.y_pos + 2 * car_1.height
+    lower = car_1.y_pos - 3 * car_1.height
+    upper = car_1.y_pos + 3 * car_1.height
 
     # The car wants to make a right turn from the left or left turn from the right
     if car_1.x_pos in range(180, 281) and direction == 1 or \
