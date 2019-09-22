@@ -98,29 +98,31 @@ def lane_change(player, buttons, cars_on_road):
         buttons (dict of buttons) - The left and right lane change buttons
         cars_on_road (dict of Car objs) - All of the cars currently on the road
     Output:
-        The colours that the lange change indicators should be filled in on the screen
+        None
     '''
     change = False
 
-    if buttons['left'].pressed:
+    if buttons['left'].pressed and player.x_pos != LANESUPERPOSITIONS[0]:
         change = cruise_control.check_lane_change(0, player, cars_on_road)
         if change and player.x_pos > LANESUPERPOSITIONS[player.cur_lane - 1]:
             player.x_pos -= 2
 
-        else:
+        if player.x_pos <= LANESUPERPOSITIONS[player.cur_lane - 1]:
             buttons['left'].pressed = False
+            print("HERE")
             player.cur_lane -= 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
             buttons['left'].colour = GREY
     else:
         buttons['left'].colour = GREY
 
-    if buttons['right'].pressed:
+    if buttons['right'].pressed and player.x_pos != LANESUPERPOSITIONS[2]:
         change = cruise_control.check_lane_change(1, player, cars_on_road)
         if change and player.x_pos < LANESUPERPOSITIONS[player.cur_lane + 1]:
             player.x_pos += 2
 
-        else:
+        if player.x_pos >= LANESUPERPOSITIONS[player.cur_lane + 1]:
+            print("HERE")
             buttons['right'].pressed = False
             player.cur_lane += 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]

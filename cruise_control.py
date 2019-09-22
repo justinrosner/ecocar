@@ -104,8 +104,8 @@ def check_lane_change(direction, car_1, cars_on_road):
     upper = car_1.y_pos + 2 * car_1.height
 
     # The car wants to make a right turn from the left or left turn from the right
-    if car_1.x_pos == LANESUPERPOSITIONS[0] and direction == 1 or \
-        car_1.x_pos == LANESUPERPOSITIONS[2] and direction == 0:
+    if car_1.x_pos in range(180, 281) and direction == 1 or \
+        car_1.x_pos in range(280, 381) and direction == 0:
         for car in middle_cars:
             car_vel = utils.kmh_to_ms(car.velocity)
             relative_vel = car_vel - player_vel
@@ -114,7 +114,7 @@ def check_lane_change(direction, car_1, cars_on_road):
                 return False
 
     # The car wants to make a right turn from the middle lane
-    elif car_1.x_pos == LANESUPERPOSITIONS[1] and direction == 1:
+    elif car_1.x_pos in range(280, 381) and direction == 1:
         for car in right_cars:
             car_vel = utils.kmh_to_ms(car.velocity)
             relative_vel = car_vel - player_vel
@@ -123,7 +123,7 @@ def check_lane_change(direction, car_1, cars_on_road):
                 return False
 
     # The car wants to make a left turn from the middle lane
-    elif car_1.x_pos == LANESUPERPOSITIONS[1] and direction == 0:
+    elif car_1.x_pos in range(180, 280) and direction == 0:
         for car in left_cars:
             car_vel = utils.kmh_to_ms(car.velocity)
             relative_vel = car_vel - player_vel
