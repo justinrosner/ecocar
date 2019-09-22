@@ -98,7 +98,7 @@ def lane_change(player, buttons, cars_on_road):
         buttons (dict of buttons) - The left and right lane change buttons
         cars_on_road (dict of Car objs) - All of the cars currently on the road
     Output:
-        None
+        A boolean value denoting whether or not a lange change has occured
     '''
     change = False
 
@@ -109,10 +109,10 @@ def lane_change(player, buttons, cars_on_road):
 
         if player.x_pos <= LANESUPERPOSITIONS[player.cur_lane - 1]:
             buttons['left'].pressed = False
-            print("HERE")
             player.cur_lane -= 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
             buttons['left'].colour = GREY
+            return True
     else:
         buttons['left'].colour = GREY
 
@@ -122,13 +122,15 @@ def lane_change(player, buttons, cars_on_road):
             player.x_pos += 2
 
         if player.x_pos >= LANESUPERPOSITIONS[player.cur_lane + 1]:
-            print("HERE")
             buttons['right'].pressed = False
             player.cur_lane += 1
             player.x_pos = LANESUPERPOSITIONS[player.cur_lane]
             buttons['right'].colour = GREY
+            return True
     else:
         buttons['right'].colour = GREY
+
+    return False
 
 def car_spwan(spawn_button, cars_on_road, cars_on_screen):
     '''
@@ -147,8 +149,8 @@ def car_spwan(spawn_button, cars_on_road, cars_on_screen):
         spawn_button.colour = GREY
 
         # Randomly generate the x and y positions of the new car
-        lane = random.randint(0, 2)
-        y_pos = random.randint(0, 800)
+        lane =  1 #random.randint(0, 2)
+        y_pos = 200 #random.randint(0, 600)
         x_pos = LANESUPERPOSITIONS[lane]
 
         # Randomly generate the speed of the new car
@@ -158,7 +160,7 @@ def car_spwan(spawn_button, cars_on_road, cars_on_screen):
         # Checking if the car overlaps with any other cars
         for car in cars_on_road:
             while cruise_control.check_collision(x_pos, y_pos, car.x_pos, car.y_pos):
-                lane = random.randint(0, 2)
+                lane = random.choice([0, 2])
                 y_pos = random.randint(0, 800)
                 x_pos = LANESUPERPOSITIONS[lane]
 

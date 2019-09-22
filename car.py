@@ -60,6 +60,15 @@ class Car:
     def check_out_of_screen(self):
         '''
         Method to see if the car has moved off of the visible screen
+        Input:
+            None
+        Output:
+            Boolean values denoting if the car is still on the screen
         '''
-        if self.x_pos + self.width > 600 or self.x_pos < 0:
-            self.x_pos -= self.d_x
+        if self.y_pos + self.height > 900 or self.y_pos < 0:
+            return True
+
+        return False
+
+    def move_spawned_cars(self, player_velocity):
+        self.y_pos += (player_velocity - self.velocity) / 10

@@ -109,7 +109,7 @@ def check_lane_change(direction, car_1, cars_on_road):
         for car in middle_cars:
             car_vel = utils.kmh_to_ms(car.velocity)
             relative_vel = car_vel - player_vel
-            if car.y_pos in range(lower, upper) or \
+            if int (car.y_pos) in range(lower, upper) or \
                 (relative_vel > 20 and car.y_pos < car_1.y_pos):
                 return False
 
@@ -118,7 +118,7 @@ def check_lane_change(direction, car_1, cars_on_road):
         for car in right_cars:
             car_vel = utils.kmh_to_ms(car.velocity)
             relative_vel = car_vel - player_vel
-            if car.y_pos in range(lower, upper) or \
+            if int (car.y_pos) in range(lower, upper) or \
                 (relative_vel > 20 and car.y_pos < car_1.y_pos):
                 return False
 
@@ -127,7 +127,7 @@ def check_lane_change(direction, car_1, cars_on_road):
         for car in left_cars:
             car_vel = utils.kmh_to_ms(car.velocity)
             relative_vel = car_vel - player_vel
-            if car.y_pos in range(lower, upper) or \
+            if int (car.y_pos ) in range(lower, upper) or \
                 (relative_vel > 20 and car.y_pos < car_1.y_pos):
                 return False
 
