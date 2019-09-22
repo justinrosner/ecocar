@@ -138,7 +138,7 @@ class Game:
                     player.velocity = round(utils.update_velocity(start_vel, target_velocity,
                                                                   utils.ms_to_sec(cur_time - start_time)), 2)
                 elif self.update:
-                    player.velocity = target_velocity
+                    player.velocity = float(target_velocity)
 
                 # Spawn another car if needed
                 possible_car = utils.car_spwan(buttons['spawn'], cars_on_road, self.cars_on_screen)
