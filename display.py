@@ -19,6 +19,7 @@ GREY = (159, 163, 168)
 GREEN = pygame.Color("#6b9c58")
 YELLOW = pygame.Color("#fcdb38")
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 TEXT_COLOR = (250, 105, 10)
 
 # Load the fonts
@@ -195,6 +196,8 @@ class Game:
 
                     car.move_spawned_cars(player.velocity)
                     car.draw_image(self.screen)
+                    self.screen.blit(FONT_19.render(f"{car.velocity}", True, RED), [car.x_pos + 15, car.y_pos + 30])
+
                 player.draw_image(self.screen)
 
                 if closest_car != None:
